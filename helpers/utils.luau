@@ -10,7 +10,7 @@ return {
             error(error_message,2) 
         end
     end,
-    remove_white = function(code: string)
+    remove_whitespace = function(code: string)
         return string.gsub(code , " ", "")
     end 
 }
