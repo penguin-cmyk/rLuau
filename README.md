@@ -12,7 +12,7 @@
 - Now you can modify the code you want in main.luau where it will be handled
 - I recommend you to use something like vscode without any rust-analyzer used and create a new rs file (easier to do it with syntax highlighting)
 
-- ** THIS IS STILL A WORK IN PROGRESS **
+- **THIS IS STILL A WORK IN PROGRESS**
 
 # Planned
 - Planned stuff thats going to be added
