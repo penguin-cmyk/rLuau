@@ -1,5 +1,5 @@
 
-local globals: { any } = require("./types.luau")
+local globals: { any } = require("./globals.luau")
 local types: { any } = require("./types.luau")
 local utils: { any } = require("./utils.luau")
 
