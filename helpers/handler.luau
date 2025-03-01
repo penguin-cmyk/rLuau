@@ -256,7 +256,7 @@ local function rLoad(input_table: { any }, code: string)
                 output_value = `= [[{value}]]`
             end 
 
-            self:insert_code(`local {variable_name} {output_value}`,1)
+            self:insert_code(`local {variable_name} = {output_value}`,1)
         elseif self:peek(0,4) == "loop" then
             self:increment(5)
 
