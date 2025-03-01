@@ -1,6 +1,7 @@
 local Handler = require("./helpers/handler.luau")
 print(Handler.translate([[
-fn x() {
-    println!("YESSS")   
-}
+    // examples will be coming soon
+    fn main() {
+        println!("YESSS");
+    }
 ]]))
