@@ -62,7 +62,7 @@ local function rLoad(input_table: { any }, code: string)
         local variable_name: string = variable[1]
         table.insert(LocalVariables,variable_name)
 
-        local output_value: string = variable[2] ~= nil and `{variable_name}: {types.get_type(utils.remove_whitespace(type))}}` or `{utils.remove_whitespace(variable_name)}`
+        local output_value: string = variable[2] ~= nil and `{variable_name}: {types.get_type(utils.remove_whitespace(variable[2]))}}` or `{utils.remove_whitespace(variable_name)}`
 
         self:increment(1)
         return output_value  
