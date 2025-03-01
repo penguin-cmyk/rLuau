@@ -16,7 +16,7 @@
 
 # Planned
 - Planned stuff thats going to be added
-  - [x] Vectors
-  - [] If statements
-  - [] Hashmaps
+  - [ ] Vectors
+  - [ ] If statements
+  - [ ] Hashmaps
     
