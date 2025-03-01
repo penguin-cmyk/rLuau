@@ -6,6 +6,7 @@
 - Download (or clone `https://github.com/penguin-cmyk/rLuau.git`) the project
 
 - Set Lune as a enviorenment variable ([Tutorial](https://www.youtube.com/watch?v=Z2k7ZBMZT3Y)) or drag the Lune file into the folder
+- Then make a main.rs file containing all of the content 
 - Do `lune run main.luau` and done!
 
 # Notes
@@ -17,6 +18,4 @@
 # Planned
 - Planned stuff thats going to be added
   - [ ] Vectors
-  - [ ] If statements
-  - [ ] Hashmaps
-    
+  - [ ] If statements    
