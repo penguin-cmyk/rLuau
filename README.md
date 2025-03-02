@@ -18,4 +18,3 @@
 # Planned
 - Planned stuff thats going to be added
   - [ ] Vectors
-  - [ ] If statements    
