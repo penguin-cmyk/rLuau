@@ -1,4 +1,5 @@
 --!nocheck
+-- If you are using a executor for this. Then create a new folder called "rLuau" and drag this project into here and transpile it from there
 local last_content = ""
 while task.wait() do 
     if isfile("rLuau/output.luau") then 
