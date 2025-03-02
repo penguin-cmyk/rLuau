@@ -1,5 +1,5 @@
 # rLuau
-- rLuau is a project (for fun) of mine which is used to convert rust code into luau (specfically rLuau (roblox luau) code)
+- rLuau is a project (for fun) of mine which is used to convert rust code into LuaU
 - It is ment for people who just wanna use a new way of writing the code
 # How to run this Project?
 - Download [Lune](https://github.com/lune-org/lune) which is a luau runtime written in rust
