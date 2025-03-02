@@ -1,9 +1,9 @@
-
+--!nocheck
+--!optimize 2
 local globals: { any } = require("./globals.luau")
 local types: { any } = require("./types.luau")
 local utils: { any } = require("./utils.luau")
 
-local CodeExecution: { string } = {}
 local LocalVariables: { string } = {}
 
 -- rLoad for rust load btw
@@ -12,7 +12,7 @@ local function rLoad(input_table: { any }, code: string)
     local current_pos: number = 1
     local length: number = #code
     
-    local self: { any } = setmetatable({},{})
+    local self: { any } = setmetatable({}, {})
     self.globals = globals
 
     function self:increment(amount: number)
@@ -50,7 +50,7 @@ local function rLoad(input_table: { any }, code: string)
 
     function self:expect(character: string, error_message: string)
         if self:get_current_char() ~= character then 
-            utils.error(error_message,2)
+            utils.error(error_message, 2)
         end  
         self:increment(1) 
     end
@@ -60,7 +60,7 @@ local function rLoad(input_table: { any }, code: string)
         local variable: { string } = collected:split(":")
 
         local variable_name: string = variable[1]
-        table.insert(LocalVariables,variable_name)
+        table.insert(LocalVariables, variable_name)
 
         local output_value: string = variable[2] ~= nil and `{variable_name}: {types.get_type(utils.remove_whitespace(variable[2]))}` or `{utils.remove_whitespace(variable_name)}`
 
@@ -78,19 +78,19 @@ local function rLoad(input_table: { any }, code: string)
             local splitted_param = param:split(":")
             if #splitted_param > 1 then 
                 local param_name = splitted_param[1]
-                local param_type = string.gsub(splitted_param[2]," ","")
+                local param_type = string.gsub(splitted_param[2], " ", "")
                 
-                table.insert(Params,`{param_name}: {types.get_type(param_type)}`)
+                table.insert(Params, `{param_name}: {types.get_type(param_type)}`)
             else 
-                table.insert(Params,param)
+                table.insert(Params, param)
             end 
         end 
         self:increment(1)
-        return table.concat(Params,",")
+        return table.concat(Params, ",")
     end
 
     function self:insert_code(code: string, skip: number)
-        table.insert(input_table,code)
+        table.insert(input_table, code)
         self:increment(skip)
     end
 
@@ -123,30 +123,30 @@ local function rLoad(input_table: { any }, code: string)
         local params = self:get_params()
         self:increment(1)
 
-        self:expect("{","Expected { got "..self:get_current_char().." (for fn)")
+        self:expect("{", "Expected { got " .. self:get_current_char() .. " (for fn)")
         local code = self:collect_chars("}")
-        local scope_code = rLoad({},code)
+        local scope_code = rLoad({}, code)
         local function_start = if is_public then `function {function_name}({params})` else  `local function {function_name}({params})`
 
-        self:insert_code(function_start,1)
-        for _,code in pairs(scope_code) do 
-            self:insert_code(`\t{code}`,0)
+        self:insert_code(function_start, 1)
+        for _, code in pairs(scope_code) do 
+            self:insert_code(`\t{code}`, 0)
         end 
-        self:insert_code(`end`,1)
+        self:insert_code(`end`, 1)
 
-        table.insert(self.globals,function_name) 
+        table.insert(self.globals, function_name) 
     end 
 
     function self:handle_scope(insert_code: string)
         local scope_code: string = self:collect_chars("}")
-        local scope_code: { string } = rLoad({},scope_code) -- shadowed over scope_code since its useless to make a different variable for it
+        local scope_code: { string } = rLoad({}, scope_code) -- shadowed over scope_code since its useless to make a different variable for it
 
-        self:insert_code(`{insert_code}`,1)
-        for _,code in pairs(scope_code) do 
-            self:insert_code(`\t{code}`,0)
+        self:insert_code(`{insert_code}`, 1)
+        for _, code in pairs(scope_code) do 
+            self:insert_code(`\t{code}`, 0)
         end 
 
-        self:insert_code("end",0)
+        self:insert_code("end", 0)
     end 
 
     function self:handle_use(split_method: string, callback)
@@ -154,12 +154,12 @@ local function rLoad(input_table: { any }, code: string)
         local Services: { string } = self:collect_chars("}"):split(split_method)
         for _, service in pairs(Services) do
             local result = callback(service)
-            if not table.find(input_table,result) then  
-                table.insert(input_table,result)
-                table.insert(self.globals,service)
+            if not table.find(input_table, result) then  
+                table.insert(input_table, result)
+                table.insert(self.globals, service)
 
             else 
-                utils.error(`-- Double declaration of "{service}" found, ignoring duplicate`,1)
+                utils.error(`-- Double declaration of "{service}" found, ignoring duplicate`, 1)
             end 
         end 
     end 
@@ -188,8 +188,8 @@ local function rLoad(input_table: { any }, code: string)
             
             -- So it will auto translate it into the specific string
             if #addiontinal_methods == 2 then 
-                local method = addiontinal_methods[2]:gsub(" ","")
-                variable = variable:gsub("."..method,""):split("()")[1]
+                local method = addiontinal_methods[2]:gsub(" ", "")
+                variable = variable:gsub("." .. method, ""):split("()")[1]
                 if method == "to_lowercase()" then
                     variable =  (`{variable}:lower()`)
                     expected = expected:lower()
@@ -204,8 +204,8 @@ local function rLoad(input_table: { any }, code: string)
 
             rLoad(code_table, code)
 
-            for _,code in pairs(code_table) do 
-                code_str = code_str..`\t\t{code}\n`
+            for _, code in pairs(code_table) do 
+                code_str = code_str .. `\t\t{code}\n`
             end 
       
             if i == 1 then
@@ -227,47 +227,74 @@ local function rLoad(input_table: { any }, code: string)
         self:insert_code(output_value, 0)
       end
       
-
     while current_pos <= length do
         local current_char = self:get_current_char()
         if self:peek(0, 7) == "println" then
             self:increment(7)
 
-            self:expect("!",`Expected ! got {self:get_current_char()} (for print)`)
-            self:expect("(",`Expected ( got {self:get_current_char()} (for print)`)
+            self:expect("!", `Expected ! got {self:get_current_char()} (for print)`)
+            self:expect("(", `Expected ( got {self:get_current_char()} (for print)`)
 
             local chars = self:collect_chars(")")
-            self:insert_code(`print({chars})`,1)
-        elseif self:peek(0,3) == "pub" and string.gsub(self:peek(3,4)," ","")== "fn" then 
+            
+            local format_str = chars:sub(2, -2)  -- Remove surrounding quotes
+            local args = {}
+            local current_arg = ""
+            local in_format = false
+                
+            if chars:find(",") then
+                local parts = chars:split(",")
+                format_str = parts[1]:sub(2, -2)  -- Remove quotes
+                table.remove(parts, 1)
+                args = parts
+            end
+                
+            local completed_args = "";
+            local result = format_str:gsub("{}", function()
+                local arg = table.remove(args, 1)
+                local completed = arg:match("%s*(.-)%s*$")
+
+                completed_args = completed_args..completed..","
+                return "{}"
+            end)
+            -- :sub(0,-2) to remove last command
+            local completed = completed_args:sub(0,-2);
+            if #completed > 0 then 
+                self:insert_code(`print({completed})`,1)
+            else 
+                self:insert_code(`print({chars})`,1)
+            end 
+            
+        elseif self:peek(0, 3) == "pub" and string.gsub(self:peek(3, 4), " ", "") == "fn" then 
             self:handle_function(true)
-        elseif self:peek(0,2) == "fn" then 
+        elseif self:peek(0, 2) == "fn" then 
             self:handle_function(false)
-        elseif self:peek(0,3) == "let" then 
+        elseif self:peek(0, 3) == "let" then 
             self:increment(4)
 
             local variable_name = self:get_variable_name()
             local variable_value = self:collect_chars("\n")
 
-            local output_value = string.gsub(variable_value,"Instance::new","Instance.new")
-            output_value = (output_value:gsub("::",":")):gsub("!:",".")
+            local output_value = string.gsub(variable_value, "Instance::new", "Instance.new")
+            output_value = (output_value:gsub("::", ":")):gsub("!:", ".")
             local multi_line_string = output_value:split('r#"')
             if #multi_line_string > 1 then 
                 local value = self:collect_chars('"')
                 output_value = `= [[{value}]]`
             end 
 
-            self:insert_code(`local {variable_name} = {output_value}`,1)
-        elseif self:peek(0,4) == "loop" then
+            self:insert_code(`local {variable_name} = {output_value}`, 1)
+        elseif self:peek(0, 4) == "loop" then
             self:increment(5)
 
-            self:expect("{",`Expected "" got {self:get_current_char()} (for loop)`)
+            self:expect("{", `Expected "" got {self:get_current_char()} (for loop)`)
             self:handle_scope(`while true do`)
-        elseif self:peek(0,5) == "while" then 
+        elseif self:peek(0, 5) == "while" then 
             self:increment(6) -- skip ze whitespaze 
             local condition = self:collect_chars("{")
             self:increment(1)
-            self:handle_scope(`while {string.gsub(condition,"::",":")}do`)
-        elseif self:peek(0,3) == "for" then 
+            self:handle_scope(`while {string.gsub(condition, "::", ":")}do`)
+        elseif self:peek(0, 3) == "for" then 
             self:increment(4)
 
             local condition = self:collect_chars("{")
@@ -275,44 +302,41 @@ local function rLoad(input_table: { any }, code: string)
             local is_loop = condition:split("in")
 
             if #is_range == 2 then 
-                local first_range,second_range = is_range[1],is_range[2]
+                local first_range, second_range = is_range[1], is_range[2]
                 self:increment(1)
                 self:handle_scope(`for i = {first_range}, {second_range} do`)
                 return 
             elseif #is_loop == 2 then 
-                local value_name,array = is_loop[1],is_loop[2]
-                local fixed_array = string.gsub(array," ","");
-                self:handle_scope(`for i,{value_name}in pairs({string.gsub(fixed_array,"::",":")}) do`)
+                local value_name, array = is_loop[1], is_loop[2]
+                local fixed_array = string.gsub(array, " ", "");
+                self:handle_scope(`for i, {value_name} in pairs({string.gsub(fixed_array, "::", ":")}) do`)
             else 
-                utils.error("Invalid Handling of for loop?",2)
+                utils.error("Invalid Handling of for loop?", 2)
             end 
-        elseif self:peek(0,2) == "if" then 
+        elseif self:peek(0, 2) == "if" then 
             self:increment(3) -- if 
-            local condition = ((self:collect_chars("{")):gsub("!::",".")):gsub("::",":")
+            local condition = ((self:collect_chars("{")):gsub("!::", ".")):gsub("::", ":")
             local if_code = {}
             
-        elseif self:peek(0,5) == "match" then 
+        elseif self:peek(0, 5) == "match" then 
             self:handle_match()     
-        elseif self:peek(0,3) == "use" then 
+        elseif self:peek(0, 3) == "use" then 
             self:increment(4)
             local services_use = self:collect_chars("{")
             if services_use == "services::" then 
-                self:handle_use(",",function(service)
+                self:handle_use(",", function(service)
                     return `local {service} = game:GetService("{service}")`
                 end)
-            elseif services_use == "task::" then 
-                self:handle_use(",",function(func)
-                    return `local {func} = task.{func:lower()}`
-                end)
+            elseif string.find(string.lower(services_use), "task") then 
+                table.insert(self.globals, "task")
             elseif services_use == "global::" then 
-                self:handle_use(",",function(global)
-                    print(global)
+                self:handle_use(",", function(global)
                     if global == "env" then 
                         env_defined = true 
                         return `local env = getgenv()`
                     else 
                         if not env_defined then 
-                            return utils.error("Please define env before using other global functions\n",1)
+                            return utils.error("Please define env before using other global functions\n", 1)
                         end 
 
                         return `local {global} = env.{global}`
@@ -321,42 +345,41 @@ local function rLoad(input_table: { any }, code: string)
             end 
             self:increment(1)
         elseif current_char == "'" then 
-            self:insert_code("'",1)
+            self:insert_code("'", 1)
         elseif current_char == '"' then 
-            self:insert_code('"',1)
+            self:insert_code('"', 1)
         elseif current_char == ';' then 
             self:increment(1)
-        elseif self:peek(0,2) == "::" then
-            print("oki")
-            local collected = string.gsub(self:collect_chars("\n"),"::",":")
-            self:insert_code(collected,2)
-        elseif self:peek(0,2) == "//" then 
+        elseif self:peek(0, 2) == "::" then
+            local collected = string.gsub(self:collect_chars("\n"), "::", ":")
+            self:insert_code(collected, 2)
+        elseif self:peek(0, 2) == "//" then 
             self:increment(3)
             local collected = self:collect_chars("\n")
-            self:insert_code(`-- {collected}`,0)
+            self:insert_code(`-- {collected}`, 0)
         else
             local identifier = self:collect_identifier()
+            
             if identifier ~= "" then
-
                 if self:is_global_variable(identifier) then
-                    print("GLOBAL",identifier)
+                    
                     if identifier == "Instance" then
-                        if self:peek(0,2) ~= "::" then 
-                            utils.error("expected :: on Instance::new",2)
+                        if self:peek(0, 2) ~= "::" then 
+                            utils.error("expected :: on Instance::new", 2)
                         end     
                         self:increment(2)
-                        if self:peek(0,3) ~= "new" then 
-                            utils.error("expected new after Instance",2)
+                        if self:peek(0, 3) ~= "new" then 
+                            utils.error("expected new after Instance", 2)
                         end 
                         self:increment(4) -- Skip (
 
                         local collect = self:collect_chars(")")
                         local Instance_new_args = collect:split(",")
 
-                        self:insert_code(`Instance.new({Instance_new_args[1]},{Instance_new_args[2]})`,1)
+                        self:insert_code(`Instance.new({Instance_new_args[1]}, {Instance_new_args[2]})`, 1)
                     elseif self:get_current_char() == "(" then
                         local collected_chars = self:collect_chars("\n")
-                        self:insert_code(`{identifier}{collected_chars}`,1)
+                        self:insert_code(`{identifier}{collected_chars}`, 1)
                     elseif self:peek(0, 2) == "::" then
                             self:increment(2)
                             local method = self:collect_identifier()
@@ -364,23 +387,22 @@ local function rLoad(input_table: { any }, code: string)
                             local args = self:collect_chars(")")
                             self:increment(1)
                             local formatted_args = args:gsub("::", ":")
-                            print(`{identifier}:{method}({formatted_args})`)
                             self:insert_code(`{identifier}:{method}({formatted_args})`, 1)
                     else
-                        local collected = string.gsub(self:collect_chars("\n"),"::",":")
-                        self:insert_code(`{identifier}{collected}`,1)
+                        local collected = string.gsub(self:collect_chars("\n"), "!::", ".")
+                        local collected = string.gsub(collected, "::", ":")
+                        self:insert_code(`{identifier}{collected}`, 1)
                     end
-                elseif table.find(LocalVariables,identifier) then 
+                elseif table.find(LocalVariables, identifier) then 
                     local collected_chars = self:collect_chars("\n");
-                    local collected_real = collected_chars:gsub("!::",".")
-                    local collected = string.gsub(collected_real,"::",":")
-                    print(collected)
+                    local collected_real = collected_chars:gsub("!::", ".")
+                    local collected = string.gsub(collected_real, "::", ":")
                     if #collected ~= 0 then  
-                        self:insert_code(identifier..collected,0)
+                        self:insert_code(identifier .. collected, 0)
                     else 
-                        self:insert_code(identifier,0)
+                        self:insert_code(identifier, 0)
                     end 
-                else 
+                else  
                     self:increment(#identifier)
                 end
             else
@@ -391,17 +413,20 @@ local function rLoad(input_table: { any }, code: string)
 
     return input_table
 end
+--  let x: Vec<rInstance> = Vec::new();
+--> local x: { Instance } = {}
+
+-->
 
 return {
     translate = function(code: string)
-        print(("\n"):rep(50))
-        local code = rLoad(CodeExecution,code);
-        local codi = table.concat(CodeExecution,"\n")
-        
-        for previous,nextvalue in pairs(types.Replacements) do
-            codi = codi:gsub(previous,nextvalue)
+        local code = rLoad({}, code);
+        local codi = table.concat(code, "\n")
+            
+        for previous, nextvalue in pairs(types.Replacements) do
+            codi = codi:gsub(previous, nextvalue)
         end
-
-        return codi.."\n--Call Main function\nif rawequal(main,nil) then\n\terror('Please define main using fn main {}')\nend\nmain()"
+    
+        return codi
     end,
 }
