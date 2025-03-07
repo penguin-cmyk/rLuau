@@ -212,9 +212,7 @@ local function rLoad(input_table: { any }, code: string)
               output_value =
                 `if {variable} == {expected} then\n{code_str}\n`
             elseif expected == "_" then 
-                output_value =
-                output_value ..
-                `\t\telse\n\t{code_str}\n`
+                output_value = output_value ..`\t\telse\n\t{code_str}\n`
             else 
               output_value =
                 output_value ..
@@ -239,8 +237,6 @@ local function rLoad(input_table: { any }, code: string)
             
             local format_str = chars:sub(2, -2)  -- Remove surrounding quotes
             local args = {}
-            local current_arg = ""
-            local in_format = false
                 
             if chars:find(",") then
                 local parts = chars:split(",")
@@ -250,7 +246,7 @@ local function rLoad(input_table: { any }, code: string)
             end
                 
             local completed_args = "";
-            local result = format_str:gsub("{}", function()
+            local _result = format_str:gsub("{}", function()
                 local arg = table.remove(args, 1)
                 local completed = arg:match("%s*(.-)%s*$")
 
@@ -274,6 +270,11 @@ local function rLoad(input_table: { any }, code: string)
 
             local variable_name = self:get_variable_name()
             local variable_value = self:collect_chars("\n")
+            
+
+            if not string.match(variable_value:sub(#variable_value-1,-1),";") then 
+                utils.error(`Expected Semicolon at ({variable_name}) the end of a variable declaration`,2)
+            end 
 
             local output_value = string.gsub(variable_value, "Instance::new", "Instance.new")
             output_value = (output_value:gsub("::", ":")):gsub("!:", ".")
@@ -322,13 +323,11 @@ local function rLoad(input_table: { any }, code: string)
             self:handle_match()     
         elseif self:peek(0, 3) == "use" then 
             self:increment(4)
-            local services_use = self:collect_chars("{")
+             local services_use = self:collect_chars("{")
             if services_use == "services::" then 
                 self:handle_use(",", function(service)
                     return `local {service} = game:GetService("{service}")`
                 end)
-            elseif string.find(string.lower(services_use), "task") then 
-                table.insert(self.globals, "task")
             elseif services_use == "global::" then 
                 self:handle_use(",", function(global)
                     if global == "env" then 
@@ -338,8 +337,8 @@ local function rLoad(input_table: { any }, code: string)
                         if not env_defined then 
                             return utils.error("Please define env before using other global functions\n", 1)
                         end 
-
-                        return `local {global} = env.{global}`
+                        table.insert(self.globals,global);
+                        return ``
                     end 
                 end)
             end 
@@ -363,21 +362,7 @@ local function rLoad(input_table: { any }, code: string)
             if identifier ~= "" then
                 if self:is_global_variable(identifier) then
                     
-                    if identifier == "Instance" then
-                        if self:peek(0, 2) ~= "::" then 
-                            utils.error("expected :: on Instance::new", 2)
-                        end     
-                        self:increment(2)
-                        if self:peek(0, 3) ~= "new" then 
-                            utils.error("expected new after Instance", 2)
-                        end 
-                        self:increment(4) -- Skip (
-
-                        local collect = self:collect_chars(")")
-                        local Instance_new_args = collect:split(",")
-
-                        self:insert_code(`Instance.new({Instance_new_args[1]}, {Instance_new_args[2]})`, 1)
-                    elseif self:get_current_char() == "(" then
+                    if self:get_current_char() == "(" then
                         local collected_chars = self:collect_chars("\n")
                         self:insert_code(`{identifier}{collected_chars}`, 1)
                     elseif self:peek(0, 2) == "::" then
