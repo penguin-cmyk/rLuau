@@ -91,12 +91,21 @@ local Types = {
 }
 
 local Replacements = {
-    ["Vector3:new"] = "Vector3.new",
-    ["Vector2:new"] = "Vector2.new",
-    ["CFrame:new"] = "CFrame.new",
+    ["Vector3:"] = "Vector3.",
+    ["Vector2:"] = "Vector2.",
+    ["CFrame:"] = "CFrame.",
     ["Instance:new"] = "Instance.new",
-
+    ["Color3:"] = "Color3.",
+    ["UDim2:"] = "UDim2.",
+    ["UDim:"] = "UDim.",
     ["TweenInfo:new"] = "TweenInfo.new",
+    ["Enum:"] = "Enum.",
+    ["Region3:"] = "Region3.",
+
+    ["task:"] = "task.",
+    ["bit32:"] = "bit32.",
+    ["string:"] = "string.", 
+    ["table:"] = "table.",
 
     ["env:"] = "env."
 } 
