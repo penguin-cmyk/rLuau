@@ -14,6 +14,9 @@ local Types = {
         "usize"
     },
 
+    -- Tab 
+    ["{ [any]: any }"] = {"rTable"},
+
     -- Primitive types
     ["string"] = { "&str" },
     ["boolean"] = {"bool"},
